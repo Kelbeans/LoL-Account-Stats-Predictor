@@ -1,8 +1,8 @@
 export const TEAM_LOGOS: Record<string, string> = {
-  T1: '/logos/t1.svg',
-  TLAW: '/logos/tlaw.svg',
-  KC: '/logos/kc.svg',
-  DCG: '/logos/dcg.svg',
+  T1: '/logos/t1.webp',
+  TLAW: '/logos/tlaw.webp',
+  KC: '/logos/kc.webp',
+  DCG: '/logos/dcg.webp',
 };
 
 export const TEAM_COLORS: Record<string, string> = {
