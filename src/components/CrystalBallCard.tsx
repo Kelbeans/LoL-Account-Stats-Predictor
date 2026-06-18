@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CrystalBallQuestion, CrystalBallPrediction } from '@/types/crystal-ball';
+import { MSI_2025_CONTEXT } from '@/data/tournament-context';
 
 interface CrystalBallCardProps {
   question: CrystalBallQuestion;
@@ -47,7 +48,15 @@ export default function CrystalBallCard({ question }: CrystalBallCardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question,
-          tournamentContext: 'MSI 2025 Play-ins. Teams include T1 (LCK), Karmine Corp (LEC), Team Liquid (LCS), Deep Cross Gaming (LJL), and others from emerging regions. Current meta favors engage supports, scaling ADCs, and flexible solo laners.',
+          tournamentContext: `Tournament: ${MSI_2025_CONTEXT.tournament}
+Tournament Patch: ${MSI_2025_CONTEXT.patch}
+
+${MSI_2025_CONTEXT.patchNotesSummary}
+
+Teams participating:
+${MSI_2025_CONTEXT.teams.map((t) => `- ${t.name} (${t.region}, Seed ${t.seed}): Strengths: ${t.strengths}. Weaknesses: ${t.weaknesses}`).join('\n')}
+
+${MSI_2025_CONTEXT.historicalTrends}`,
         }),
       });
       const data = await res.json();
