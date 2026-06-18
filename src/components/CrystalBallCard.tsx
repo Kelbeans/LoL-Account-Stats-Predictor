@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { CrystalBallQuestion, CrystalBallPrediction } from '@/types/crystal-ball';
-import { MSI_2025_CONTEXT } from '@/data/tournament-context';
+import { MSI_2026_CONTEXT } from '@/data/tournament-context';
 
 interface CrystalBallCardProps {
   question: CrystalBallQuestion;
@@ -89,15 +89,9 @@ export default function CrystalBallCard({ question }: CrystalBallCardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question,
-          tournamentContext: `Tournament: ${MSI_2025_CONTEXT.tournament}
-Tournament Patch: ${MSI_2025_CONTEXT.patch}
+          tournamentContext: `${MSI_2026_CONTEXT.instructions}
 
-${MSI_2025_CONTEXT.patchNotesSummary}
-
-Teams participating (with qualifying tournament results):
-${MSI_2025_CONTEXT.teams.map((t) => `- ${t.name} (${t.region}, Seed ${t.seed}): Strengths: ${t.strengths}. Weaknesses: ${t.weaknesses}. Qualifying: ${t.qualifyingResult || 'N/A'}`).join('\n')}
-
-${MSI_2025_CONTEXT.historicalTrends}`,
+${MSI_2026_CONTEXT.historicalTrends}`,
         }),
       });
       const data = await res.json();
