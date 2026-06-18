@@ -35,8 +35,11 @@ export default function MatchDetailPage() {
     );
   }
 
+  const [error, setError] = useState<string | null>(null);
+
   const handlePredict = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/predict', {
         method: 'POST',
@@ -44,9 +47,13 @@ export default function MatchDetailPage() {
         body: JSON.stringify(match),
       });
       const data = await res.json();
+      if (!res.ok || data.error) {
+        setError(data.error || 'Prediction failed');
+        return;
+      }
       setPrediction(data);
     } catch (err) {
-      console.error('Prediction failed:', err);
+      setError('Network error — could not reach prediction API');
     } finally {
       setLoading(false);
     }
@@ -106,6 +113,15 @@ export default function MatchDetailPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="mb-6 bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 rounded-xl p-4 text-center">
+              <p className="text-sm text-red-300">{error}</p>
+              <button onClick={handlePredict} className="mt-2 text-xs text-red-300 hover:text-red-200 underline">
+                Try again
+              </button>
+            </div>
+          )}
+
           {prediction ? (
             <div className="space-y-4">
               <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden">
@@ -136,7 +152,7 @@ export default function MatchDetailPage() {
                     <p className="text-sm text-[var(--foreground)] leading-relaxed">{prediction.reasoning}</p>
                   </div>
 
-                  <div>
+                  {prediction.keyFactors && prediction.keyFactors.length > 0 && <div>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--foreground-muted)] mb-3">Key Factors</p>
                     <div className="space-y-2">
                       {prediction.keyFactors.map((factor, i) => (
@@ -146,7 +162,7 @@ export default function MatchDetailPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div>}
                 </div>
 
                 <div className="px-6 py-3 border-t border-[var(--card-border)] flex items-center justify-between bg-[var(--background-secondary)]">

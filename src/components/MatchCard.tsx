@@ -36,7 +36,9 @@ export default function MatchCard({ match }: MatchCardProps) {
         body: JSON.stringify(match),
       });
       const data = await res.json();
-      setPrediction(data);
+      if (res.ok && !data.error) {
+        setPrediction(data);
+      }
     } catch (err) {
       console.error('Prediction failed:', err);
     } finally {

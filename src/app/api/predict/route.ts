@@ -27,8 +27,16 @@ Head-to-head history: ${JSON.stringify(h2h)}`;
     setCache(cacheKey, prediction);
 
     return NextResponse.json(prediction);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Prediction failed';
+  } catch (error: unknown) {
+    let message = 'Prediction failed';
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    if (typeof error === 'object' && error !== null && 'status' in error) {
+      const apiError = error as { status: number; error?: { message?: string } };
+      message = apiError.error?.message || `API error (${apiError.status})`;
+    }
+    console.error('[/api/predict]', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
