@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Match } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 
@@ -74,6 +75,12 @@ export default function MatchCard({ match }: MatchCardProps) {
           {loading ? 'Predicting...' : 'Generate Prediction'}
         </button>
       )}
+      <Link
+        href={`/match/${match.id}`}
+        className="mt-2 block text-center text-xs text-gray-400 hover:text-[var(--accent-cyan)] transition-colors"
+      >
+        Details &rarr;
+      </Link>
     </div>
   );
 }
