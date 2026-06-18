@@ -25,7 +25,6 @@ const INITIAL_MATCHES: Record<string, Match> = {
   },
 };
 
-const SEEDED_TEAMS = ['T1', 'KC'];
 
 export default function BracketView() {
   const [matches, setMatches] = useState<Record<string, Match>>(INITIAL_MATCHES);
@@ -279,11 +278,10 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
       } ${canPredict ? 'cursor-pointer hover:border-[var(--accent-cyan)]/50 hover:shadow-[0_0_15px_var(--accent-cyan-dim)]' : ''}`}
       onClick={canPredict ? onPredict : undefined}
     >
-      {/* Team 1 (Top seed) */}
+      {/* Team 1 */}
       <TeamRow
         team={match?.team1}
         isWinner={prediction?.predictedWinner === match?.team1.name}
-        isSeeded={match ? SEEDED_TEAMS.includes(match.team1.shortName) : false}
         isTBD={!match || match.team1.name === 'TBD'}
       />
 
@@ -294,7 +292,6 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
       <TeamRow
         team={match?.team2}
         isWinner={prediction?.predictedWinner === match?.team2.name}
-        isSeeded={match ? SEEDED_TEAMS.includes(match.team2.shortName) : false}
         isTBD={!match || match.team2.name === 'TBD'}
       />
 
@@ -320,10 +317,9 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
   );
 }
 
-function TeamRow({ team, isWinner, isSeeded, isTBD }: {
+function TeamRow({ team, isWinner, isTBD }: {
   team: Team | undefined;
   isWinner: boolean;
-  isSeeded: boolean;
   isTBD: boolean;
 }) {
   if (isTBD || !team) {
@@ -349,14 +345,9 @@ function TeamRow({ team, isWinner, isSeeded, isTBD }: {
       }`}>
         {team.shortName}
       </span>
-      {isSeeded && (
+      {isWinner && (
         <svg className="w-4 h-4 text-[var(--accent-gold)]" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-      )}
-      {isWinner && (
-        <svg className="w-4 h-4 text-[var(--accent-green)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       )}
     </div>
