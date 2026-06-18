@@ -4,6 +4,8 @@ import { getCache, setCache } from '@/lib/cache';
 
 export interface TournamentTeam {
   name: string;
+  region: string;
+  seed: number;
   logoUrl: string | null;
   players: { ign: string; role: string }[];
   coaches: string[];
@@ -39,9 +41,15 @@ export async function GET() {
     const tournament = await getLatestMSI();
     const rosters = await getTournamentRosters(tournament);
 
+    const regionCount: Record<string, number> = {};
+
     const teams: TournamentTeam[] = await Promise.all(
       rosters.map(async (r) => {
         const { players, coaches } = parseRoster(r.RosterLinks || '', r.Roles || '');
+        const region = r.Region || 'Unknown';
+        regionCount[region] = (regionCount[region] || 0) + 1;
+        const seed = regionCount[region];
+
         let logoUrl: string | null = null;
         try {
           logoUrl = await getTeamLogoUrl(r.Team);
@@ -50,6 +58,8 @@ export async function GET() {
         }
         return {
           name: r.Team,
+          region,
+          seed,
           logoUrl,
           players,
           coaches,

@@ -7,6 +7,8 @@ import { TEAM_LOGOS } from '@/data/team-logos';
 
 interface LiveTeam {
   name: string;
+  region: string;
+  seed: number;
   logoUrl: string | null;
   players: { ign: string; role: string }[];
   coaches: string[];
@@ -127,8 +129,20 @@ function LiveTeamCard({ team }: { team: LiveTeam }) {
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-[var(--foreground)] truncate">{team.name}</p>
-          <p className="text-xs text-[var(--foreground-muted)]">{team.players.length} players</p>
+          <div className="flex items-center gap-2">
+            <p className="text-base font-bold text-[var(--foreground)] truncate">{team.name}</p>
+            {team.seed === 1 && (
+              <svg className="w-4 h-4 text-[var(--accent-gold)] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${regionColors[team.region] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
+              {team.region}
+            </span>
+            <span className="text-xs text-[var(--foreground-muted)]">Seed #{team.seed}</span>
+          </div>
         </div>
       </div>
 
@@ -168,7 +182,12 @@ function LiveTeamModal({ team, cardRef, logoUrl }: { team: LiveTeam; cardRef: Re
         )}
         <div>
           <h3 className="text-lg font-bold text-[var(--foreground)]">{team.name}</h3>
-          <p className="text-[10px] text-[var(--foreground-muted)]">MSI 2026 Qualified</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${regionColors[team.region] || 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
+              {team.region}
+            </span>
+            <span className="text-[10px] text-[var(--foreground-muted)]">Seed #{team.seed}</span>
+          </div>
         </div>
       </div>
 

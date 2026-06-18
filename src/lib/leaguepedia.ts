@@ -62,8 +62,18 @@ export async function getLatestMSI(): Promise<string> {
 export async function getTournamentRosters(tournament: string) {
   return cargoQuery({
     tables: 'TournamentRosters',
-    fields: 'Team,RosterLinks,Roles',
+    fields: 'Team,RosterLinks,Roles,Region',
     where: `OverviewPage="${tournament}"`,
+    limit: 50,
+  });
+}
+
+export async function getTournamentTeamSeeds(tournament: string) {
+  return cargoQuery({
+    tables: 'TournamentRosters',
+    fields: 'Team,Region,Short',
+    where: `OverviewPage="${tournament}"`,
+    orderBy: 'Region,Team',
     limit: 50,
   });
 }
