@@ -11,6 +11,35 @@ export interface TournamentTeam {
   coaches: string[];
 }
 
+const KNOWN_TEAM_REGIONS: Record<string, string> = {
+  'T1': 'LCK',
+  'Gen.G': 'LCK',
+  'Hanwha Life Esports': 'LCK',
+  'DRX': 'LCK',
+  'Dplus KIA': 'LCK',
+  'Bilibili Gaming': 'LPL',
+  'Top Esports': 'LPL',
+  'JD Gaming': 'LPL',
+  'Weibo Gaming': 'LPL',
+  'G2 Esports': 'LEC',
+  'Karmine Corp': 'LEC',
+  'Fnatic': 'LEC',
+  'Movistar KOI': 'LEC',
+  'Team Liquid': 'LCS',
+  'FlyQuest': 'LCS',
+  'LYON': 'LCS',
+  'Cloud9': 'LCS',
+  'GAM Esports': 'VCS',
+  'Team Secret Whales': 'LCP',
+  'Deep Cross Gaming': 'LCP',
+  'CTBC Flying Oyster': 'PCS',
+  'PSG Talon': 'PCS',
+  'FURIA': 'CBLOL',
+  'LOUD': 'CBLOL',
+  'Movistar R7': 'LLA',
+  "Anyone's Legend": 'LPL',
+};
+
 function parseRoster(rosterLinks: string, roles: string): { players: { ign: string; role: string }[]; coaches: string[] } {
   const names = rosterLinks.split(';;');
   const roleList = roles.split(';;');
@@ -46,7 +75,7 @@ export async function GET() {
     const teams: TournamentTeam[] = await Promise.all(
       rosters.map(async (r) => {
         const { players, coaches } = parseRoster(r.RosterLinks || '', r.Roles || '');
-        const region = r.Region || 'Unknown';
+        const region = r.Region || KNOWN_TEAM_REGIONS[r.Team] || 'Unknown';
         regionCount[region] = (regionCount[region] || 0) + 1;
         const seed = regionCount[region];
 
@@ -68,7 +97,7 @@ export async function GET() {
     );
 
     const result = { tournament, teams };
-    setCache(cacheKey, result, 1000 * 60 * 60); // 1 hour cache
+    setCache(cacheKey, result, 1000 * 60 * 60);
 
     return NextResponse.json(result);
   } catch (error: unknown) {
