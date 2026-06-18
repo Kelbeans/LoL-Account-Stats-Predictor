@@ -1,12 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0e13;
+  --background: #030711;
+  --background-secondary: #0a1018;
   --foreground: #e2e8f0;
-  --card-bg: #131a24;
-  --card-border: #1e293b;
-  --accent-cyan: #22d3ee;
-  --accent-gold: #f59e0b;
+  --foreground-muted: #94a3b8;
+  --card-bg: #0f1923;
+  --card-bg-hover: #152030;
+  --card-border: #1a2a3a;
+  --accent-cyan: #00d4ff;
+  --accent-cyan-dim: #00d4ff33;
+  --accent-gold: #f5a623;
+  --accent-gold-dim: #f5a62333;
+  --accent-purple: #a855f7;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
 }
 
 * {
@@ -27,18 +35,80 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--card-border);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-cyan);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-cyan-dim); }
+  50% { box-shadow: 0 0 20px var(--accent-cyan-dim), 0 0 40px var(--accent-cyan-dim); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--card-bg) 25%, var(--card-bg-hover) 50%, var(--card-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 10px var(--accent-cyan-dim), 0 0 30px var(--accent-cyan-dim), inset 0 0 10px var(--accent-cyan-dim);
+}
+
+.glow-gold {
+  box-shadow: 0 0 10px var(--accent-gold-dim), 0 0 30px var(--accent-gold-dim), inset 0 0 10px var(--accent-gold-dim);
+}
+
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-cyan-dim);
+  border-color: var(--accent-cyan);
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent-cyan), transparent, var(--accent-gold));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
 }

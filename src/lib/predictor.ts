@@ -5,6 +5,7 @@ import { Match } from '@/types/match';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
+  baseURL: process.env.ANTHROPIC_BASE_URL || undefined,
 });
 
 export async function predictMatch(match: Match, context: string): Promise<MatchPrediction> {
