@@ -93,8 +93,8 @@ Tournament Patch: ${MSI_2025_CONTEXT.patch}
 
 ${MSI_2025_CONTEXT.patchNotesSummary}
 
-Teams participating:
-${MSI_2025_CONTEXT.teams.map((t) => `- ${t.name} (${t.region}, Seed ${t.seed}): Strengths: ${t.strengths}. Weaknesses: ${t.weaknesses}`).join('\n')}
+Teams participating (with qualifying tournament results):
+${MSI_2025_CONTEXT.teams.map((t) => `- ${t.name} (${t.region}, Seed ${t.seed}): Strengths: ${t.strengths}. Weaknesses: ${t.weaknesses}. Qualifying: ${t.qualifyingResult || 'N/A'}`).join('\n')}
 
 ${MSI_2025_CONTEXT.historicalTrends}`,
         }),
