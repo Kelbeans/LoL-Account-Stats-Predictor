@@ -4,7 +4,7 @@ import { Match } from '@/types/match';
 
 const BEDROCK_BASE = process.env.ANTHROPIC_BASE_URL || 'https://rocketpartners.gateway.codevine.ai/bedrock/v1';
 const API_KEY = process.env.ANTHROPIC_API_KEY!;
-const MODEL_ID = 'zai.glm-5';
+const MODEL_ID = 'us.anthropic.claude-opus-4-5-20251101-v1:0';
 
 async function callBedrock(messages: { role: string; content: string }[], maxTokens = 1024): Promise<string> {
   const url = `${BEDROCK_BASE}/model/${MODEL_ID}/invoke`;
