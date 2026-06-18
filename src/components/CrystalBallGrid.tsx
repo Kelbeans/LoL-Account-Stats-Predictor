@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import CrystalBallCard from './CrystalBallCard';
-import { MSI_2025_QUESTIONS } from '@/data/crystal-ball-questions';
+import { CRYSTAL_BALL_QUESTIONS } from '@/data/crystal-ball-questions';
 import { CrystalBallCategory } from '@/types/crystal-ball';
 
 const categories: { key: CrystalBallCategory; label: string; color: string }[] = [
@@ -16,8 +16,8 @@ export default function CrystalBallGrid() {
   const [activeCategory, setActiveCategory] = useState<CrystalBallCategory | 'all'>('all');
 
   const filteredQuestions = activeCategory === 'all'
-    ? MSI_2025_QUESTIONS
-    : MSI_2025_QUESTIONS.filter((q) => q.category === activeCategory);
+    ? CRYSTAL_BALL_QUESTIONS
+    : CRYSTAL_BALL_QUESTIONS.filter((q) => q.category === activeCategory);
 
   return (
     <div className="space-y-6">
@@ -37,10 +37,10 @@ export default function CrystalBallGrid() {
               : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)] bg-[var(--card-bg)] border border-[var(--card-border)]'
           }`}
         >
-          All ({MSI_2025_QUESTIONS.length})
+          All ({CRYSTAL_BALL_QUESTIONS.length})
         </button>
         {categories.map((cat) => {
-          const count = MSI_2025_QUESTIONS.filter((q) => q.category === cat.key).length;
+          const count = CRYSTAL_BALL_QUESTIONS.filter((q) => q.category === cat.key).length;
           return (
             <button
               key={cat.key}

@@ -1,52 +1,37 @@
-export const MSI_2026_CONTEXT = {
-  tournament: 'MSI 2026',
-  patch: '26.13',
+export const TOURNAMENT_CONTEXT = {
   instructions: `
-You are predicting for MSI 2026 (Mid-Season Invitational 2026).
-The tournament is being played on Patch 26.13.
-The format uses FEARLESS DRAFT (teams cannot reuse champions they already picked in a series).
+You are predicting for the CURRENT League of Legends international tournament (MSI or Worlds).
+Use your most up-to-date knowledge to determine:
+- What is the current tournament happening right now (MSI or Worlds, and what year)
+- What patch the tournament is being played on
+- What draft format is being used (Standard or Fearless Draft)
+- Which teams qualified and from which regions
+- The current champion meta on the tournament patch
+- Recent team performance from their qualifying leagues
 
-IMPORTANT CONTEXT:
-- Patch 26.13 includes the new champion Locke (released for this patch)
-- Fearless Draft means champion pools matter MORE than usual — teams with wider pools have an advantage
-- Teams cannot repick champions already used in prior games of a best-of series
-- This heavily favors teams with deep champion oceans (historically LPL and LEC teams)
+IMPORTANT RULES:
+- Always use the LATEST information you have — do not rely on outdated data
+- If Fearless Draft is being used, factor in champion pool depth
+- Consider new champions that may have been released for the tournament patch
+- Factor in international experience and historical patterns
 
-Use your knowledge of:
-- The current Patch 26.13 champion balance, buffs, nerfs, and item changes
-- The current pro meta (which champions are strong/weak, pick/ban priorities)
-- The MSI 2026 qualified teams and their recent performance in their regional leagues
-- How Fearless Draft affects pick/ban/winrate patterns vs standard draft
-- Whether the new champion Locke is enabled for pro play and how it impacts the meta
-- Historical international tournament patterns and trends
-
-Teams qualified for MSI 2026:
-- Bilibili Gaming (LPL #1)
-- Top Esports (LPL #2)
-- G2 Esports (LEC #1)
-- Karmine Corp (LEC #2)
-- Hanwha Life Esports (LCK #1)
-- T1 (LCK #2)
-- LYON (LCS #1)
-- Team Liquid (LCS #2)
-- Team Secret Whales (LCP #1)
-- Deep Cross Gaming (LCP #2)
-- FURIA (CBLOL #1)
+Provide specific, confident predictions based on current data. If you are unsure about something, say so rather than guessing with outdated info.
 `,
   historicalTrends: `
-Historical MSI/Worlds Pick'em Trends (still relevant patterns):
-- Most picked champions at internationals: engage supports, safe ADCs, flex mid/top picks
-- Highest winrate champions are typically niche counterpicks only pulled when conditions are perfect (60-70%+ wr)
-- Lowest winrate champions are often comfort picks that teams refuse to drop despite bad meta fit
-- Most banned champions are typically the strongest flex picks or lane-dominant champions of the patch
-- First bloods are most often secured by aggressive junglers (early game focused)
-- Highest CS in a single game is usually an ADC in a 40+ minute game (450-500+ CS)
-- Highest KDA players come from dominant teams that win quickly with few deaths
-- Shortest games at internationals: 15-20 minutes when top seed stomps wildcard
-- Most unique champions played: LEC and LPL teams historically have the widest pools
-- Average total kills in a single game peaks at 40-60 in wildcard vs wildcard fiestas
-- Unique champions picked across a tournament play-in stage: typically 85-110
-- Elder dragons are more common in close, long series (5-game matches)
-- Teemo is almost never picked in pro play
+Historical International Tournament Pick'em Patterns (these trends persist across years):
+- Most picked champions: engage supports, safe ADCs, flex mid/top picks dominate pick rates
+- Highest winrate champions: niche counterpicks only pulled in perfect conditions (60-70%+ wr)
+- Lowest winrate champions: comfort picks teams refuse to drop despite bad meta fit
+- Most banned champions: strongest flex picks or lane-dominant champions of the patch
+- First bloods: most often secured by aggressive junglers
+- Highest CS single game: ADC in a 40+ minute game (450-500+ CS)
+- Highest KDA: players from dominant teams that win quickly with few deaths
+- Shortest games: 15-20 minutes when top seed stomps emerging region team
+- Most unique champions: LEC and LPL teams historically have widest pools
+- Kill fiestas: 40-60 total kills in games between evenly-matched emerging region teams
+- Unique champions across play-in stage: typically 85-110+
+- Elder dragons: accumulate in close, long 5-game series
+- Teemo: almost never picked in pro play (has happened once or twice in history)
+- Fearless Draft (if used): inflates unique champion count significantly, favors deep pools
 `,
 };

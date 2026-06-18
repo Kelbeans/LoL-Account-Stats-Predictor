@@ -35,12 +35,21 @@ async function cargoQuery(params: CargoQueryParams): Promise<Record<string, stri
   return data.cargoquery?.map((item: { title: Record<string, string> }) => item.title) || [];
 }
 
-export async function getLatestMSI(): Promise<string> {
+export async function getLatestTournament(): Promise<string> {
   const currentYear = new Date().getFullYear();
-  const candidates = [
-    `${currentYear} Mid-Season Invitational`,
-    `${currentYear - 1} Mid-Season Invitational`,
-  ];
+  const currentMonth = new Date().getMonth() + 1;
+
+  const candidates = currentMonth >= 8
+    ? [
+        `${currentYear} Season World Championship`,
+        `${currentYear} Mid-Season Invitational`,
+        `${currentYear - 1} Season World Championship`,
+      ]
+    : [
+        `${currentYear} Mid-Season Invitational`,
+        `${currentYear - 1} Season World Championship`,
+        `${currentYear - 1} Mid-Season Invitational`,
+      ];
 
   for (const name of candidates) {
     try {
@@ -57,6 +66,10 @@ export async function getLatestMSI(): Promise<string> {
   }
 
   return `${currentYear} Mid-Season Invitational`;
+}
+
+export async function getLatestMSI(): Promise<string> {
+  return getLatestTournament();
 }
 
 export async function getTournamentRosters(tournament: string) {
