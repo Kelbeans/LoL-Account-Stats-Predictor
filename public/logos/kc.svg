@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <rect width="48" height="48" rx="8" fill="#00b4d8"/>
-  <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-weight="900" font-size="16" fill="white">KC</text>
+  <rect width="48" height="48" rx="6" fill="#1a1a2e"/>
+  <path d="M14 14h3v8l6-8h4l-6 7.5L28 34h-4l-5-9.5-2 2.5V34h-3V14z" fill="#00c8ff"/>
+  <path d="M30 14h3v20h-3V14z" fill="#00c8ff"/>
+  <circle cx="31.5" cy="11" r="2" fill="#00c8ff"/>
 </svg>

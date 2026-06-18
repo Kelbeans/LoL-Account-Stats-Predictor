@@ -4,7 +4,7 @@ import { Match } from '@/types/match';
 
 const BEDROCK_BASE = process.env.ANTHROPIC_BASE_URL || 'https://rocketpartners.gateway.codevine.ai/bedrock/v1';
 const API_KEY = process.env.ANTHROPIC_API_KEY!;
-const MODEL_ID = 'us.anthropic.claude-sonnet-4-20250514-v1:0';
+const MODEL_ID = 'zai.glm-5';
 
 async function callBedrock(messages: { role: string; content: string }[], maxTokens = 1024): Promise<string> {
   const url = `${BEDROCK_BASE}/model/${MODEL_ID}/invoke`;
@@ -32,6 +32,13 @@ async function callBedrock(messages: { role: string; content: string }[], maxTok
   if (data.content && Array.isArray(data.content) && data.content.length > 0) {
     const block = data.content[0];
     if (block.type === 'text') return block.text;
+  }
+
+  if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
+    const choice = data.choices[0];
+    if (choice.message && typeof choice.message.content === 'string') {
+      return choice.message.content;
+    }
   }
 
   throw new Error(`Unexpected response shape: ${JSON.stringify(data).slice(0, 300)}`);
