@@ -67,7 +67,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch summoner data';
+    let message = 'Failed to fetch summoner data';
+    if (error instanceof Error) {
+      message = error.message;
+      if (message.includes('401') || message.includes('Forbidden')) {
+        message = 'Riot API key expired or invalid. Get a new key from developer.riotgames.com (free, regenerates every 24h).';
+      }
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
