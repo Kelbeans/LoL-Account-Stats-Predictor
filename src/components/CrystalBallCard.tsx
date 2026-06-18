@@ -84,12 +84,26 @@ export default function CrystalBallCard({ question }: CrystalBallCardProps) {
   const handlePredict = async () => {
     setLoading(true);
     try {
+      let rosterContext = '';
+      try {
+        const tournamentRes = await fetch('/api/tournament');
+        const tournamentData = await tournamentRes.json();
+        if (tournamentData.teams) {
+          rosterContext = '\n\nCONFIRMED CURRENT ROSTERS (from Leaguepedia - DO NOT use outdated roster info):\n' +
+            tournamentData.teams.map((t: { name: string; players: { ign: string; role: string }[] }) =>
+              `- ${t.name}: ${t.players.map((p: { ign: string; role: string }) => `${p.role}=${p.ign}`).join(', ')}`
+            ).join('\n');
+        }
+      } catch {
+        // Tournament data unavailable, proceed without rosters
+      }
+
       const res = await fetch('/api/crystal-ball', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question,
-          tournamentContext: `${TOURNAMENT_CONTEXT.instructions}
+          tournamentContext: `${TOURNAMENT_CONTEXT.instructions}${rosterContext}
 
 ${TOURNAMENT_CONTEXT.historicalTrends}`,
         }),
