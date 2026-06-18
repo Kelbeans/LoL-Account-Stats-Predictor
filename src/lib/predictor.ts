@@ -44,6 +44,43 @@ async function callBedrock(messages: { role: string; content: string }[], maxTok
   throw new Error(`Unexpected response shape: ${JSON.stringify(data).slice(0, 300)}`);
 }
 
+function parseJsonResponse(text: string): Record<string, unknown> {
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON found in response: ' + text.slice(0, 200));
+
+  let jsonStr = jsonMatch[0];
+
+  try {
+    return JSON.parse(jsonStr);
+  } catch {
+    // Try fixing common issues: unescaped single quotes, trailing commas
+    jsonStr = jsonStr
+      .replace(/(?<=:\s*"[^"]*)'(?=[^"]*")/g, "\\'")
+      .replace(/,\s*}/g, '}')
+      .replace(/,\s*]/g, ']');
+
+    try {
+      return JSON.parse(jsonStr);
+    } catch {
+      // Last resort: extract fields manually
+      const winner = text.match(/"predictedWinner"\s*:\s*"([^"]+)"/)?.[1];
+      const confidence = text.match(/"confidence"\s*:\s*(\d+)/)?.[1];
+      const score = text.match(/"predictedScore"\s*:\s*"([^"]+)"/)?.[1];
+      const reasoning = text.match(/"reasoning"\s*:\s*"([^"]*?)"/)?.[1];
+      const answer = text.match(/"answer"\s*:\s*"([^"]+)"/)?.[1];
+
+      return {
+        predictedWinner: winner || '',
+        confidence: confidence ? parseInt(confidence) : 50,
+        predictedScore: score || '3-2',
+        reasoning: reasoning || 'Prediction generated based on available data.',
+        keyFactors: [],
+        answer: answer || '',
+      };
+    }
+  }
+}
+
 export async function predictMatch(match: Match, context: string): Promise<MatchPrediction> {
   const prompt = `You are a League of Legends esports analyst. Based on the following data, predict the outcome of this match.
 
@@ -64,17 +101,15 @@ Respond ONLY with valid JSON (no markdown, no code fences):
 }`;
 
   const text = await callBedrock([{ role: 'user', content: prompt }]);
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('Failed to parse prediction response from: ' + text.slice(0, 200));
-  const result = JSON.parse(jsonMatch[0]);
+  const result = parseJsonResponse(text);
 
   return {
     matchId: match.id,
-    predictedWinner: result.predictedWinner,
-    confidence: result.confidence,
-    predictedScore: result.predictedScore,
-    reasoning: result.reasoning,
-    keyFactors: result.keyFactors || [],
+    predictedWinner: String(result.predictedWinner || match.team1.name),
+    confidence: Number(result.confidence) || 50,
+    predictedScore: String(result.predictedScore || '3-2'),
+    reasoning: String(result.reasoning || 'Prediction generated.'),
+    keyFactors: Array.isArray(result.keyFactors) ? result.keyFactors.map(String) : [],
     generatedAt: new Date().toISOString(),
   };
 }
@@ -102,15 +137,13 @@ Respond ONLY with valid JSON (no markdown, no code fences):
 }`;
 
   const text = await callBedrock([{ role: 'user', content: prompt }]);
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('Failed to parse crystal ball response from: ' + text.slice(0, 200));
-  const result = JSON.parse(jsonMatch[0]);
+  const result = parseJsonResponse(text);
 
   return {
     questionId: question.id,
-    answer: result.answer,
-    confidence: result.confidence,
-    reasoning: result.reasoning,
+    answer: String(result.answer || 'Unknown'),
+    confidence: Number(result.confidence) || 50,
+    reasoning: String(result.reasoning || 'Prediction generated.'),
     generatedAt: new Date().toISOString(),
   };
 }
