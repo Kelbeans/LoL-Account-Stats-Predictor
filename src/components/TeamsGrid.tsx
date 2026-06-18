@@ -13,12 +13,12 @@ const regionColors: Record<string, string> = {
   CBLOL: 'bg-green-500/10 text-green-400 border-green-500/20',
 };
 
-const roleIcons: Record<string, string> = {
-  Top: 'M4 4h7v7H4V4z',
-  Jungle: 'M12 2l4 8-4 4-4-4 4-8z',
-  Mid: 'M12 2l10 10-10 10L2 12 12 2z',
-  Bot: 'M4 13h7v7H4v-7z',
-  Support: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+const roleImages: Record<string, string> = {
+  Top: '/roles/top.svg',
+  Jungle: '/roles/jungle.svg',
+  Mid: '/roles/mid.svg',
+  Bot: '/roles/bot.svg',
+  Support: '/roles/support.svg',
 };
 
 export default function TeamsGrid() {
@@ -155,10 +155,8 @@ function TeamModal({ team, cardRef }: { team: QualifiedTeam; cardRef: React.RefO
           <div className="space-y-2">
             {team.players.map((player) => (
               <div key={player.ign} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded bg-[var(--background-secondary)] flex items-center justify-center">
-                  <svg className="w-3.5 h-3.5 text-[var(--foreground-muted)]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d={roleIcons[player.role] || roleIcons.Mid} />
-                  </svg>
+                <div className="w-6 h-6 rounded bg-[var(--background-secondary)] flex items-center justify-center p-0.5">
+                  <img src={roleImages[player.role] || roleImages.Mid} alt={player.role} className="w-full h-full" />
                 </div>
                 <span className="text-xs text-[var(--foreground-muted)] w-14">{player.role}</span>
                 <span className="text-sm font-semibold text-[var(--foreground)]">{player.ign}</span>
