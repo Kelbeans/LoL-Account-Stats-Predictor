@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-type TabKey = 'bracket' | 'crystal-ball' | 'teams';
+type TabKey = 'bracket' | 'crystal-ball' | 'teams' | 'my-stats';
 
 interface TournamentTabsProps {
-  children: [React.ReactNode, React.ReactNode, React.ReactNode];
+  children: [React.ReactNode, React.ReactNode, React.ReactNode, React.ReactNode];
 }
 
 const tabs: { key: TabKey; label: string; icon: string; activeColor: string }[] = [
@@ -26,6 +26,12 @@ const tabs: { key: TabKey; label: string; icon: string; activeColor: string }[] 
     label: 'Teams',
     icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
     activeColor: 'bg-[var(--accent-green)] text-black shadow-[0_0_15px_rgba(16,185,129,0.2)]',
+  },
+  {
+    key: 'my-stats',
+    label: 'My Stats',
+    icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z',
+    activeColor: 'bg-[var(--accent-purple)] text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]',
   },
 ];
 
