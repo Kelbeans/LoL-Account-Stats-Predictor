@@ -1,6 +1,7 @@
 import TournamentTabs from '@/components/TournamentTabs';
 import BracketView from '@/components/BracketView';
 import CrystalBallGrid from '@/components/CrystalBallGrid';
+import TeamsGrid from '@/components/TeamsGrid';
 
 export default function Home() {
   return (
@@ -31,6 +32,7 @@ export default function Home() {
           <TournamentTabs>
             <BracketView />
             <CrystalBallGrid />
+            <TeamsGrid />
           </TournamentTabs>
         </div>
       </div>
