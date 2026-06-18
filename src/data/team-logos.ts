@@ -4,10 +4,12 @@ export const TEAM_LOGOS: Record<string, string> = {
   KC: '/logos/kc.webp',
   DCG: '/logos/dcg.webp',
   TES: '/logos/tes.webp',
-  PSG: '/logos/psg.webp',
-  GAM: '/logos/gam.webp',
-  LOUD: '/logos/loud.webp',
-  R7: '/logos/r7.webp',
+  BLG: '/logos/blg.webp',
+  G2: '/logos/g2.webp',
+  HLE: '/logos/hle.webp',
+  LYON: '/logos/lyon.webp',
+  TSW: '/logos/tsw.webp',
+  FUR: '/logos/furia.webp',
 };
 
 export const TEAM_COLORS: Record<string, string> = {
@@ -16,8 +18,10 @@ export const TEAM_COLORS: Record<string, string> = {
   KC: '#00b4d8',
   DCG: '#1b3a5c',
   TES: '#e84c3d',
-  PSG: '#004170',
-  GAM: '#f5a623',
-  LOUD: '#00cd4e',
-  R7: '#6b2fa0',
+  BLG: '#00a2e8',
+  G2: '#ffffff',
+  HLE: '#f5a623',
+  LYON: '#c8a951',
+  TSW: '#7b2d8b',
+  FUR: '#1a1a1a',
 };

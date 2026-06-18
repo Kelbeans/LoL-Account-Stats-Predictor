@@ -7,16 +7,23 @@ export interface QualifiedTeam extends Team {
 }
 
 export const MSI_2025_TEAMS: QualifiedTeam[] = [
-  { name: 'T1', shortName: 'T1', region: 'LCK', seed: 1, league: 'LCK', logoUrl: '/logos/t1.webp' },
-  { name: 'Karmine Corp', shortName: 'KC', region: 'LEC', seed: 1, league: 'LEC', logoUrl: '/logos/kc.webp' },
-  { name: 'Team Liquid', shortName: 'TLAW', region: 'LCS', seed: 1, league: 'LCS', logoUrl: '/logos/tlaw.webp' },
-  { name: 'Deep Cross Gaming', shortName: 'DCG', region: 'LJL', seed: 1, league: 'LJL', logoUrl: '/logos/dcg.webp' },
-  { name: 'Top Esports', shortName: 'TES', region: 'LPL', seed: 1, league: 'LPL', logoUrl: '/logos/tes.webp' },
-  { name: 'PSG Talon', shortName: 'PSG', region: 'PCS', seed: 1, league: 'PCS', logoUrl: '/logos/psg.webp' },
-  { name: 'GAM Esports', shortName: 'GAM', region: 'VCS', seed: 1, league: 'VCS', logoUrl: '/logos/gam.webp' },
-  { name: 'LOUD', shortName: 'LOUD', region: 'CBLOL', seed: 1, league: 'CBLOL', logoUrl: '/logos/loud.webp' },
-  { name: 'Movistar R7', shortName: 'R7', region: 'LLA', seed: 1, league: 'LLA', logoUrl: '/logos/r7.webp' },
-  { name: 'Fukuoka SoftBank Hawks', shortName: 'FSH', region: 'LJL', seed: 2, league: 'LJL', logoUrl: '/logos/fsh.webp' },
+  // LPL
+  { name: 'Bilibili Gaming', shortName: 'BLG', region: 'LPL', seed: 1, league: 'LPL', logoUrl: '/logos/blg.webp' },
+  { name: 'Top Esports', shortName: 'TES', region: 'LPL', seed: 2, league: 'LPL', logoUrl: '/logos/tes.webp' },
+  // LEC
+  { name: 'G2 Esports', shortName: 'G2', region: 'LEC', seed: 1, league: 'LEC', logoUrl: '/logos/g2.webp' },
+  { name: 'Karmine Corp', shortName: 'KC', region: 'LEC', seed: 2, league: 'LEC', logoUrl: '/logos/kc.webp' },
+  // LCK
+  { name: 'Hanwha Life', shortName: 'HLE', region: 'LCK', seed: 1, league: 'LCK', logoUrl: '/logos/hle.webp' },
+  { name: 'T1', shortName: 'T1', region: 'LCK', seed: 2, league: 'LCK', logoUrl: '/logos/t1.webp' },
+  // LCS
+  { name: 'LYON', shortName: 'LYON', region: 'LCS', seed: 1, league: 'LCS', logoUrl: '/logos/lyon.webp' },
+  { name: 'Team Liquid', shortName: 'TLAW', region: 'LCS', seed: 2, league: 'LCS', logoUrl: '/logos/tlaw.webp' },
+  // LCP (APAC)
+  { name: 'Team Secret Whales', shortName: 'TSW', region: 'LCP', seed: 1, league: 'LCP', logoUrl: '/logos/tsw.webp' },
+  { name: 'Deep Cross Gaming', shortName: 'DCG', region: 'LCP', seed: 2, league: 'LCP', logoUrl: '/logos/dcg.webp' },
+  // CBLOL
+  { name: 'FURIA', shortName: 'FUR', region: 'CBLOL', seed: 1, league: 'CBLOL', logoUrl: '/logos/furia.webp' },
 ];
 
 export function getTeamByShortName(shortName: string): QualifiedTeam | undefined {
