@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { Match } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 import { Team } from '@/types/team';
@@ -346,7 +347,7 @@ function TeamRow({ team, isWinner, isSeeded, isTBD }: {
         : 'bg-[var(--card-bg)]'
     }`}>
       {logoSrc ? (
-        <img src={logoSrc} alt={team.shortName} width={32} height={32} className="rounded-lg" />
+        <Image src={logoSrc} alt={team.shortName} width={32} height={32} className="rounded-lg" unoptimized />
       ) : (
         <div className="w-8 h-8 rounded-lg bg-[var(--card-border)] flex items-center justify-center">
           <span className="text-[10px] font-bold text-[var(--foreground-muted)]">{team.shortName.slice(0, 2)}</span>
