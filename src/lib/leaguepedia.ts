@@ -29,7 +29,43 @@ async function cargoQuery(params: CargoQueryParams): Promise<Record<string, stri
   }
 
   const data = await res.json();
+  if (data.error) {
+    throw new Error(`Leaguepedia: ${data.error.info || data.error.code}`);
+  }
   return data.cargoquery?.map((item: { title: Record<string, string> }) => item.title) || [];
+}
+
+export async function getLatestMSI(): Promise<string> {
+  const currentYear = new Date().getFullYear();
+  const candidates = [
+    `${currentYear} Mid-Season Invitational`,
+    `${currentYear - 1} Mid-Season Invitational`,
+  ];
+
+  for (const name of candidates) {
+    try {
+      const results = await cargoQuery({
+        tables: 'TournamentRosters',
+        fields: 'Team',
+        where: `OverviewPage="${name}"`,
+        limit: 1,
+      });
+      if (results.length > 0) return name;
+    } catch {
+      continue;
+    }
+  }
+
+  return `${currentYear} Mid-Season Invitational`;
+}
+
+export async function getTournamentRosters(tournament: string) {
+  return cargoQuery({
+    tables: 'TournamentRosters',
+    fields: 'Team,RosterLinks,Roles',
+    where: `OverviewPage="${tournament}"`,
+    limit: 50,
+  });
 }
 
 export async function getTournamentMatches(tournament: string) {
@@ -60,4 +96,28 @@ export async function getHeadToHead(team1: string, team2: string) {
     orderBy: 'DateTime_UTC DESC',
     limit: 20,
   });
+}
+
+export async function getTeamLogoUrl(teamName: string): Promise<string | null> {
+  const fileName = `File:${teamName.replace(/ /g, '_')}logo_square.png`;
+  const params = new URLSearchParams({
+    action: 'query',
+    titles: fileName,
+    prop: 'imageinfo',
+    iiprop: 'url',
+    format: 'json',
+  });
+
+  const res = await fetch(`${LEAGUEPEDIA_API}?${params}`, {
+    headers: { 'User-Agent': 'LoLPickemPredictor/1.0' },
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const pages = data.query?.pages;
+  if (!pages) return null;
+
+  const page = Object.values(pages)[0] as { imageinfo?: { url: string }[] };
+  return page.imageinfo?.[0]?.url || null;
 }
