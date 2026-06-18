@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { Match } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 import { Team } from '@/types/team';
-import { TEAM_LOGOS, TEAM_LOGOS_FALLBACK } from '@/data/team-logos';
+import { TEAM_LOGOS } from '@/data/team-logos';
 
 const TBD_TEAM: Team = { name: 'TBD', shortName: '---', region: '—' };
 
@@ -364,25 +364,14 @@ function TeamRow({ team, isWinner, isSeeded, isTBD }: {
 }
 
 function TeamLogo({ shortName }: { shortName: string }) {
-  const primary = TEAM_LOGOS[shortName];
-  const fallback = TEAM_LOGOS_FALLBACK[shortName];
-
-  return (
-    <picture>
-      {primary && <source srcSet={primary} type="image/png" />}
-      <img
-        src={fallback || primary}
-        alt={shortName}
-        width={32}
-        height={32}
-        className="w-8 h-8 rounded-lg object-contain"
-        onError={(e) => {
-          const img = e.currentTarget;
-          if (fallback && img.src !== fallback) {
-            img.src = fallback;
-          }
-        }}
-      />
-    </picture>
-  );
+  const src = TEAM_LOGOS[shortName];
+  if (!src) {
+    return (
+      <div className="w-8 h-8 rounded-lg bg-[var(--card-border)] flex items-center justify-center">
+        <span className="text-[10px] font-bold text-[var(--foreground-muted)]">{shortName.slice(0, 2)}</span>
+      </div>
+    );
+  }
+  /* eslint-disable @next/next/no-img-element */
+  return <img src={src} alt={shortName} width={32} height={32} className="w-8 h-8 rounded-lg" />;
 }
