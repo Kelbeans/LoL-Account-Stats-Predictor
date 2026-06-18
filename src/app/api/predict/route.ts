@@ -13,15 +13,23 @@ export async function POST(request: NextRequest) {
     const cached = getCache<MatchPrediction>(cacheKey);
     if (cached) return NextResponse.json(cached);
 
-    const [team1Recent, team2Recent, h2h] = await Promise.all([
-      getTeamRecentMatches(match.team1.name),
-      getTeamRecentMatches(match.team2.name),
-      getHeadToHead(match.team1.name, match.team2.name),
-    ]);
+    let context = `Match: ${match.team1.name} vs ${match.team2.name}, Tournament: ${match.tournament}, Stage: ${match.stage}`;
 
-    const context = `Team 1 (${match.team1.name}) recent results: ${JSON.stringify(team1Recent)}
+    try {
+      const [team1Recent, team2Recent, h2h] = await Promise.all([
+        getTeamRecentMatches(match.team1.name),
+        getTeamRecentMatches(match.team2.name),
+        getHeadToHead(match.team1.name, match.team2.name),
+      ]);
+
+      if (team1Recent.length > 0 || team2Recent.length > 0) {
+        context = `Team 1 (${match.team1.name}) recent results: ${JSON.stringify(team1Recent)}
 Team 2 (${match.team2.name}) recent results: ${JSON.stringify(team2Recent)}
 Head-to-head history: ${JSON.stringify(h2h)}`;
+      }
+    } catch {
+      // Leaguepedia unavailable (rate limited) — predict without match history
+    }
 
     const prediction = await predictMatch(match, context);
     setCache(cacheKey, prediction);

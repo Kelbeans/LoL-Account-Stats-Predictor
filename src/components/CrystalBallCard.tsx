@@ -34,7 +34,8 @@ const CHAMPION_NAMES: Record<string, string> = {
   smolder: 'Smolder',
 };
 
-function getChampionImageUrl(answer: string): string | null {
+function getChampionImageUrl(answer: unknown): string | null {
+  if (!answer || typeof answer !== 'string') return null;
   const lower = answer.toLowerCase().replace(/['\s-]/g, '');
   for (const [key, name] of Object.entries(CHAMPION_NAMES)) {
     if (lower.includes(key)) {
