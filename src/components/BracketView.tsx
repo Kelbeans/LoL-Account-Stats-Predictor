@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Image from 'next/image';
 import { Match } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 import { Team } from '@/types/team';
-import { TEAM_LOGOS } from '@/data/team-logos';
+import { TEAM_LOGOS, TEAM_LOGOS_FALLBACK } from '@/data/team-logos';
 
 const TBD_TEAM: Team = { name: 'TBD', shortName: '---', region: '—' };
 
@@ -338,21 +337,13 @@ function TeamRow({ team, isWinner, isSeeded, isTBD }: {
     );
   }
 
-  const logoSrc = TEAM_LOGOS[team.shortName];
-
   return (
     <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
       isWinner
         ? 'bg-[var(--accent-cyan)]/8'
         : 'bg-[var(--card-bg)]'
     }`}>
-      {logoSrc ? (
-        <Image src={logoSrc} alt={team.shortName} width={32} height={32} className="rounded-lg" unoptimized />
-      ) : (
-        <div className="w-8 h-8 rounded-lg bg-[var(--card-border)] flex items-center justify-center">
-          <span className="text-[10px] font-bold text-[var(--foreground-muted)]">{team.shortName.slice(0, 2)}</span>
-        </div>
-      )}
+      <TeamLogo shortName={team.shortName} />
       <span className={`text-base font-bold flex-1 ${
         isWinner ? 'text-[var(--accent-cyan)]' : 'text-[var(--foreground)]'
       }`}>
@@ -369,5 +360,29 @@ function TeamRow({ team, isWinner, isSeeded, isTBD }: {
         </svg>
       )}
     </div>
+  );
+}
+
+function TeamLogo({ shortName }: { shortName: string }) {
+  const primary = TEAM_LOGOS[shortName];
+  const fallback = TEAM_LOGOS_FALLBACK[shortName];
+
+  return (
+    <picture>
+      {primary && <source srcSet={primary} type="image/png" />}
+      <img
+        src={fallback || primary}
+        alt={shortName}
+        width={32}
+        height={32}
+        className="w-8 h-8 rounded-lg object-contain"
+        onError={(e) => {
+          const img = e.currentTarget;
+          if (fallback && img.src !== fallback) {
+            img.src = fallback;
+          }
+        }}
+      />
+    </picture>
   );
 }
