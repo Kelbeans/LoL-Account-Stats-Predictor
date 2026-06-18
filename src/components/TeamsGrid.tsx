@@ -7,6 +7,7 @@ import { TEAM_LOGOS } from '@/data/team-logos';
 
 interface LiveTeam {
   name: string;
+  logoUrl: string | null;
   players: { ign: string; role: string }[];
   coaches: string[];
 }
@@ -99,11 +100,7 @@ function LiveTeamCard({ team }: { team: LiveTeam }) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const shortName = Object.keys(TEAM_LOGOS).find((key) =>
-    team.name.toLowerCase().includes(key.toLowerCase()) ||
-    key.toLowerCase().includes(team.name.split(' ')[0].toLowerCase())
-  );
-  const logoUrl = shortName ? TEAM_LOGOS[shortName] : null;
+  const logoUrl = team.logoUrl || TEAM_LOGOS[team.name] || null;
 
   const handleMouseEnter = () => {
     timeoutRef.current = setTimeout(() => setShowModal(true), 300);

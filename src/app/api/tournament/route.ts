@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getLatestMSI, getTournamentRosters } from '@/lib/leaguepedia';
+import { getLatestMSI, getTournamentRosters, getTeamLogoUrl } from '@/lib/leaguepedia';
 import { getCache, setCache } from '@/lib/cache';
 
 export interface TournamentTeam {
   name: string;
+  logoUrl: string | null;
   players: { ign: string; role: string }[];
   coaches: string[];
 }
@@ -38,14 +39,23 @@ export async function GET() {
     const tournament = await getLatestMSI();
     const rosters = await getTournamentRosters(tournament);
 
-    const teams: TournamentTeam[] = rosters.map((r) => {
-      const { players, coaches } = parseRoster(r.RosterLinks || '', r.Roles || '');
-      return {
-        name: r.Team,
-        players,
-        coaches,
-      };
-    });
+    const teams: TournamentTeam[] = await Promise.all(
+      rosters.map(async (r) => {
+        const { players, coaches } = parseRoster(r.RosterLinks || '', r.Roles || '');
+        let logoUrl: string | null = null;
+        try {
+          logoUrl = await getTeamLogoUrl(r.Team);
+        } catch {
+          logoUrl = null;
+        }
+        return {
+          name: r.Team,
+          logoUrl,
+          players,
+          coaches,
+        };
+      })
+    );
 
     const result = { tournament, teams };
     setCache(cacheKey, result, 1000 * 60 * 60); // 1 hour cache

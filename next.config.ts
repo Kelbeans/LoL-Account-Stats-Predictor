@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         hostname: 'static.lolesports.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'static.wikia.nocookie.net',
+        pathname: '/**',
+      },
     ],
   },
 };
