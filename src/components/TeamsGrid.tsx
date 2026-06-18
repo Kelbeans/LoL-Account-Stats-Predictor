@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MSI_2025_TEAMS, QualifiedTeam } from '@/data/teams';
 
 const regionColors: Record<string, string> = {
@@ -45,6 +46,7 @@ export default function TeamsGrid() {
 function TeamCard({ team }: { team: QualifiedTeam }) {
   const [showModal, setShowModal] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const regionStyle = regionColors[team.league] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
 
   const handleMouseEnter = () => {
@@ -58,6 +60,7 @@ function TeamCard({ team }: { team: QualifiedTeam }) {
 
   return (
     <div
+      ref={cardRef}
       className="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -91,17 +94,32 @@ function TeamCard({ team }: { team: QualifiedTeam }) {
       </div>
 
       {showModal && (
-        <TeamModal team={team} />
+        <TeamModal team={team} cardRef={cardRef} />
       )}
     </div>
   );
 }
 
-function TeamModal({ team }: { team: QualifiedTeam }) {
+function TeamModal({ team, cardRef }: { team: QualifiedTeam; cardRef: React.RefObject<HTMLDivElement | null> }) {
+  const [pos, setPos] = useState({ top: 0, left: 0 });
   const regionStyle = regionColors[team.league] || 'bg-gray-500/10 text-gray-400 border-gray-500/20';
 
-  return (
-    <div className="absolute z-50 top-full left-0 mt-2 w-[340px] bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl shadow-black/50 overflow-hidden animate-in fade-in duration-200">
+  useEffect(() => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      const modalHeight = 400;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const top = spaceBelow > modalHeight ? rect.bottom + 8 : rect.top - modalHeight - 8;
+      const left = Math.min(rect.left, window.innerWidth - 360);
+      setPos({ top: Math.max(8, top), left: Math.max(8, left) });
+    }
+  }, [cardRef]);
+
+  return createPortal(
+    <div
+      className="fixed z-[9999] w-[340px] max-h-[400px] overflow-y-auto bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl shadow-black/60 pointer-events-none"
+      style={{ top: pos.top, left: pos.left }}
+    >
       {/* Header */}
       <div className="bg-[var(--background-secondary)] p-4 border-b border-[var(--card-border)] flex items-center gap-4">
         {/* eslint-disable @next/next/no-img-element */}
@@ -162,6 +180,7 @@ function TeamModal({ team }: { team: QualifiedTeam }) {
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
