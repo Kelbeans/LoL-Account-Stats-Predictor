@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAccountByRiotId, getSummonerByPuuid, getRankedStats, getChampionMastery, getMatchHistory, getMatchDetails, getRoutingRegion } from '@/lib/riot-api';
 import { getCache, setCache } from '@/lib/cache';
 
+function sanitize(input: string): string {
+  return input.replace(/[⁦⁧⁨⁩​‌‍﻿]/g, '').trim();
+}
+
 export async function GET(request: NextRequest) {
-  const gameName = request.nextUrl.searchParams.get('name');
-  const tagLine = request.nextUrl.searchParams.get('tag');
+  const rawName = request.nextUrl.searchParams.get('name');
+  const rawTag = request.nextUrl.searchParams.get('tag');
   const platform = request.nextUrl.searchParams.get('platform') || 'ph2';
 
-  if (!gameName || !tagLine) {
+  if (!rawName || !rawTag) {
     return NextResponse.json({ error: 'name and tag parameters required' }, { status: 400 });
   }
+
+  const gameName = sanitize(rawName);
+  const tagLine = sanitize(rawTag);
 
   const cacheKey = `summoner:${gameName}#${tagLine}:${platform}`;
   const cached = getCache<unknown>(cacheKey);
