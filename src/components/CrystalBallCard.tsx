@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { CrystalBallQuestion, CrystalBallPrediction } from '@/types/crystal-ball';
 import { TOURNAMENT_CONTEXT } from '@/data/tournament-context';
+import { loadFromStorage, saveToStorage } from '@/lib/storage';
 
 interface CrystalBallCardProps {
   question: CrystalBallQuestion;
@@ -81,6 +82,11 @@ export default function CrystalBallCard({ question }: CrystalBallCardProps) {
   const [loading, setLoading] = useState(false);
   const config = categoryConfig[question.category];
 
+  useEffect(() => {
+    const saved = loadFromStorage<CrystalBallPrediction>(`cb:${question.id}`);
+    if (saved) setPrediction(saved);
+  }, [question.id]);
+
   const handlePredict = async () => {
     setLoading(true);
     try {
@@ -111,6 +117,7 @@ ${TOURNAMENT_CONTEXT.historicalTrends}`,
       const data = await res.json();
       if (res.ok && !data.error) {
         setPrediction(data);
+        saveToStorage(`cb:${question.id}`, data);
       }
     } catch (err) {
       console.error('Crystal ball prediction failed:', err);

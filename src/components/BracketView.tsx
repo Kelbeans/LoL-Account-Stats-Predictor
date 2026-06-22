@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Match } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 import { Team } from '@/types/team';
 import { TEAM_LOGOS } from '@/data/team-logos';
+import { loadFromStorage, saveToStorage, loadAllPredictions } from '@/lib/storage';
 
 const TBD_TEAM: Team = { name: 'TBD', shortName: '---', region: '—' };
 
@@ -31,6 +32,17 @@ export default function BracketView() {
   const [predictions, setPredictions] = useState<Record<string, MatchPrediction>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    const savedPredictions = loadAllPredictions<MatchPrediction>('bracket:');
+    if (Object.keys(savedPredictions).length > 0) {
+      setPredictions(savedPredictions);
+    }
+    const savedMatches = loadFromStorage<Record<string, Match>>('bracket:matches');
+    if (savedMatches) {
+      setMatches((prev) => ({ ...prev, ...savedMatches }));
+    }
+  }, []);
+
   const handlePredict = async (matchKey: string) => {
     const match = matches[matchKey];
     if (!match || match.team1.name === 'TBD' || match.team2.name === 'TBD') return;
@@ -45,6 +57,7 @@ export default function BracketView() {
       const data = await res.json();
       if (res.ok && !data.error) {
         setPredictions((prev) => ({ ...prev, [matchKey]: data }));
+        saveToStorage(`bracket:${matchKey}`, data);
         propagateResults(matchKey, data, match);
       }
     } catch (err) {
@@ -132,6 +145,7 @@ export default function BracketView() {
         };
       }
 
+      saveToStorage('bracket:matches', updated);
       return updated;
     });
   };
