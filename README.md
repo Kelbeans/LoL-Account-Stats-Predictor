@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LoL Pick'em Predictor
 
-## Getting Started
+AI-powered predictions for League of Legends Pick'em events (MSI and Worlds).
 
-First, run the development server:
+## Features
+
+- **Bracket Predictions** - Cascading bracket view where predicted winners flow into later rounds
+- **Crystal Ball** - AI predictions for champion/player/team questions (most picked, highest winrate, most bans, etc.)
+- **Teams** - Live team data fetched from Leaguepedia (rosters, logos, regions, seeds)
+- **My Stats** - Look up your LoL account stats via Riot API (rank, match history, mastery)
+- **Fearless Draft aware** - Predictions account for Fearless Draft format implications
+- **Persistent** - All predictions saved to localStorage (no re-calling AI on refresh)
+- **Auto-updating** - Detects current tournament and patch automatically
+
+## Tech Stack
+
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS (dark esports theme)
+- Claude Opus 4.5 (via AWS Bedrock gateway) for predictions
+- Leaguepedia MediaWiki API for team/roster/match data
+- Riot Data Dragon for champion/item images
+- Riot API for personal account stats
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Add your keys to `.env.local`:
+
+```
+ANTHROPIC_BASE_URL=https://your-gateway.com/bedrock/v1
+ANTHROPIC_API_KEY=your-gateway-api-key
+RIOT_API_KEY=RGAPI-your-riot-api-key
+```
+
+## Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data Sources
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Source | What it provides |
+|--------|-----------------|
+| Leaguepedia (lol.fandom.com) | Team rosters, logos, tournament data, match history |
+| Riot Data Dragon | Champion images, item icons, patch versions |
+| Riot API | Personal account stats (rank, match history, mastery) |
+| LoL Patch Notes (leagueoflegends.com) | Current patch champion changes |
 
-## Learn More
+## Notes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Riot API dev keys expire every 24 hours - regenerate at https://developer.riotgames.com
+- Leaguepedia has rate limits - the app gracefully handles these with caching
+- Predictions use confirmed patch data + historical patterns (not model hallucinations)
+- All tournament data auto-updates when Leaguepedia is updated
