@@ -1,53 +1,40 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Match } from '@/types/match';
+import { useState, useEffect } from 'react';
+import { Match, TournamentBracket } from '@/types/match';
 import { MatchPrediction } from '@/types/prediction';
 import { Team } from '@/types/team';
 import { TEAM_LOGOS } from '@/data/team-logos';
-import { loadFromStorage, saveToStorage, loadAllPredictions } from '@/lib/storage';
-
-const TBD_TEAM: Team = { name: 'TBD', shortName: '---', region: '—' };
-
-const INITIAL_MATCHES: Record<string, Match> = {
-  'ub-sf-1': {
-    id: 'msi-2025-ub-sf-1',
-    team1: { name: 'T1', shortName: 'T1', region: 'LCK' },
-    team2: { name: 'Team Liquid', shortName: 'TLAW', region: 'LCS' },
-    tournament: 'MSI 2025',
-    stage: 'Upper Bracket SF',
-  },
-  'ub-sf-2': {
-    id: 'msi-2025-ub-sf-2',
-    team1: { name: 'Karmine Corp', shortName: 'KC', region: 'LEC' },
-    team2: { name: 'Deep Cross Gaming', shortName: 'DCG', region: 'LJL' },
-    tournament: 'MSI 2025',
-    stage: 'Upper Bracket SF',
-  },
-};
-
+import { formatTournamentName, getCurrentStageName, getKnockoutLayout, getPlayInLayout, projectBracket, BracketColumn } from '@/lib/bracket';
+import { saveToStorage, removeFromStorage, loadAllPredictions } from '@/lib/storage';
+import LoadingSpinner from './LoadingSpinner';
+import ErrorCard from './ErrorCard';
 
 export default function BracketView() {
-  const [matches, setMatches] = useState<Record<string, Match>>(INITIAL_MATCHES);
+  const [bracket, setBracket] = useState<TournamentBracket | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<Record<string, MatchPrediction>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [fetchAttempt, setFetchAttempt] = useState(0);
 
   useEffect(() => {
-    const savedPredictions = loadAllPredictions<MatchPrediction>('bracket:');
-    if (Object.keys(savedPredictions).length > 0) {
-      setPredictions(savedPredictions);
-    }
-    const savedMatches = loadFromStorage<Record<string, Match>>('bracket:matches');
-    if (savedMatches) {
-      setMatches((prev) => ({ ...prev, ...savedMatches }));
-    }
-  }, []);
+    // Drop the pre-live-data snapshot so stale MSI 2025 matches never resurface
+    removeFromStorage('bracket:matches');
+    fetch('/api/bracket')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          setFetchError(data.error);
+        } else {
+          setBracket(data);
+          setPredictions(loadAllPredictions<MatchPrediction>('bracket:'));
+        }
+      })
+      .catch(() => setFetchError('Failed to load bracket'));
+  }, [fetchAttempt]);
 
-  const handlePredict = async (matchKey: string) => {
-    const match = matches[matchKey];
-    if (!match || match.team1.name === 'TBD' || match.team2.name === 'TBD') return;
-
-    setLoading((prev) => ({ ...prev, [matchKey]: true }));
+  const handlePredict = async (match: Match) => {
+    setLoading((prev) => ({ ...prev, [match.id]: true }));
     try {
       const res = await fetch('/api/predict', {
         method: 'POST',
@@ -56,230 +43,172 @@ export default function BracketView() {
       });
       const data = await res.json();
       if (res.ok && !data.error) {
-        setPredictions((prev) => ({ ...prev, [matchKey]: data }));
-        saveToStorage(`bracket:${matchKey}`, data);
-        propagateResults(matchKey, data, match);
+        setPredictions((prev) => ({ ...prev, [match.id]: data }));
+        saveToStorage(`bracket:${match.id}`, data);
       }
     } catch (err) {
       console.error('Prediction failed:', err);
     } finally {
-      setLoading((prev) => ({ ...prev, [matchKey]: false }));
+      setLoading((prev) => ({ ...prev, [match.id]: false }));
     }
   };
 
-  const propagateResults = (matchKey: string, prediction: MatchPrediction, match: Match) => {
-    const winner = prediction.predictedWinner === match.team1.name ? match.team1 : match.team2;
-    const loser = prediction.predictedWinner === match.team1.name ? match.team2 : match.team1;
-
-    setMatches((prev) => {
-      const updated = { ...prev };
-
-      if (matchKey === 'ub-sf-1') {
-        updated['ub-final'] = {
-          id: 'msi-2025-ub-final',
-          team1: winner,
-          team2: prev['ub-final']?.team2 || TBD_TEAM,
-          tournament: 'MSI 2025',
-          stage: 'Upper Bracket Final',
-        };
-        updated['lb-sf'] = {
-          id: 'msi-2025-lb-sf',
-          team1: loser,
-          team2: prev['lb-sf']?.team2 || TBD_TEAM,
-          tournament: 'MSI 2025',
-          stage: 'Lower Bracket SF',
-        };
-      }
-
-      if (matchKey === 'ub-sf-2') {
-        updated['ub-final'] = {
-          id: 'msi-2025-ub-final',
-          team1: prev['ub-final']?.team1 || TBD_TEAM,
-          team2: winner,
-          tournament: 'MSI 2025',
-          stage: 'Upper Bracket Final',
-        };
-        updated['lb-sf'] = {
-          id: 'msi-2025-lb-sf',
-          team1: prev['lb-sf']?.team1 || TBD_TEAM,
-          team2: loser,
-          tournament: 'MSI 2025',
-          stage: 'Lower Bracket SF',
-        };
-      }
-
-      if (matchKey === 'ub-final') {
-        updated['grand-final'] = {
-          id: 'msi-2025-grand-final',
-          team1: winner,
-          team2: prev['grand-final']?.team2 || TBD_TEAM,
-          tournament: 'MSI 2025',
-          stage: 'Grand Final',
-        };
-        updated['lb-final'] = {
-          id: 'msi-2025-lb-final',
-          team1: prev['lb-final']?.team1 || TBD_TEAM,
-          team2: loser,
-          tournament: 'MSI 2025',
-          stage: 'Lower Bracket Final',
-        };
-      }
-
-      if (matchKey === 'lb-sf') {
-        updated['lb-final'] = {
-          id: 'msi-2025-lb-final',
-          team1: winner,
-          team2: prev['lb-final']?.team2 || TBD_TEAM,
-          tournament: 'MSI 2025',
-          stage: 'Lower Bracket Final',
-        };
-      }
-
-      if (matchKey === 'lb-final') {
-        updated['grand-final'] = {
-          id: 'msi-2025-grand-final',
-          team1: prev['grand-final']?.team1 || TBD_TEAM,
-          team2: winner,
-          tournament: 'MSI 2025',
-          stage: 'Grand Final',
-        };
-      }
-
-      saveToStorage('bracket:matches', updated);
-      return updated;
-    });
+  const retryFetch = () => {
+    setFetchError(null);
+    setBracket(null);
+    setFetchAttempt((attempt) => attempt + 1);
   };
 
-  const isReady = (matchKey: string) => {
-    const match = matches[matchKey];
-    return match && match.team1.name !== 'TBD' && match.team2.name !== 'TBD';
-  };
+  if (fetchError) {
+    return <ErrorCard message={fetchError} onRetry={retryFetch} />;
+  }
+
+  if (!bracket) {
+    return (
+      <div className="py-16">
+        <LoadingSpinner size="lg" label="Loading live bracket..." />
+      </div>
+    );
+  }
+
+  const currentStage = getCurrentStageName(bracket);
+  const displayBracket = projectBracket(bracket, predictions);
+  const layout = getKnockoutLayout(displayBracket);
+  const playInLayout = getPlayInLayout(displayBracket);
+  const playInStages = new Set(playInLayout?.stageNames ?? []);
+
+  const stageSection = (stage: { name: string; matches: Match[] }) => (
+    <div key={stage.name}>
+      <div className="flex items-center gap-3 mb-4">
+        <h3 className="text-base font-bold text-[var(--foreground)] uppercase tracking-wide">{stage.name}</h3>
+        {stage.name === currentStage && (
+          <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--accent-gold-dim)] text-[var(--accent-gold)]">
+            Current
+          </span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-6">
+        {stage.matches.map((match) => (
+          <BracketSlot
+            key={match.id}
+            match={match}
+            prediction={predictions[match.id]}
+            loading={loading[match.id]}
+            onPredict={() => handlePredict(match)}
+            isGrandFinal={/final/i.test(stage.name)}
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-10">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-bold text-[var(--foreground)]">MSI 2025</h2>
-        <span className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--accent-cyan-dim)] text-[var(--accent-cyan)] border border-[var(--accent-cyan)]/20">
-          Bracket Stage
-        </span>
+        <h2 className="text-lg font-bold text-[var(--foreground)]">{formatTournamentName(bracket.tournament)}</h2>
+        {currentStage && (
+          <span className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--accent-cyan-dim)] text-[var(--accent-cyan)] border border-[var(--accent-cyan)]/20">
+            {currentStage}
+          </span>
+        )}
       </div>
 
-      {/* UPPER BRACKET */}
-      <div>
-        <div className="flex items-center gap-6 overflow-x-auto pb-4">
-          {/* Round 1: Semifinals */}
-          <div className="flex flex-col gap-6 shrink-0">
-            <BracketSlot
-              match={matches['ub-sf-1']}
-              prediction={predictions['ub-sf-1']}
-              loading={loading['ub-sf-1']}
-              onPredict={() => handlePredict('ub-sf-1')}
-              ready={true}
-            />
-            <BracketSlot
-              match={matches['ub-sf-2']}
-              prediction={predictions['ub-sf-2']}
-              loading={loading['ub-sf-2']}
-              onPredict={() => handlePredict('ub-sf-2')}
-              ready={true}
-            />
-          </div>
+      {playInLayout && (
+        <>
+          <BracketSection
+            title="Play-In"
+            columns={playInLayout.upper}
+            predictions={predictions}
+            loading={loading}
+            onPredict={handlePredict}
+          />
+          <BracketSection
+            title="Play-In — Lower Bracket"
+            columns={playInLayout.lower}
+            predictions={predictions}
+            loading={loading}
+            onPredict={handlePredict}
+          />
+        </>
+      )}
 
-          {/* Connector */}
-          <div className="flex flex-col items-center justify-center shrink-0">
-            <div className="w-8 h-px bg-[var(--card-border)]" />
-          </div>
+      {layout ? (
+        <>
+          {layout.otherStages.filter((s) => !playInStages.has(s.name)).map(stageSection)}
+          <BracketSection
+            title="Upper Bracket"
+            columns={layout.upper}
+            predictions={predictions}
+            loading={loading}
+            onPredict={handlePredict}
+          />
+          <BracketSection
+            title="Lower Bracket"
+            columns={layout.lower}
+            predictions={predictions}
+            loading={loading}
+            onPredict={handlePredict}
+          />
+        </>
+      ) : (
+        displayBracket.stages.filter((s) => !playInStages.has(s.name)).map(stageSection)
+      )}
+    </div>
+  );
+}
 
-          {/* Round 2: Upper Final */}
-          <div className="shrink-0">
-            <BracketSlot
-              match={matches['ub-final']}
-              prediction={predictions['ub-final']}
-              loading={loading['ub-final']}
-              onPredict={() => handlePredict('ub-final')}
-              ready={isReady('ub-final')}
-            />
+function BracketSection({ title, columns, predictions, loading, onPredict }: {
+  title: string;
+  columns: BracketColumn[];
+  predictions: Record<string, MatchPrediction>;
+  loading: Record<string, boolean>;
+  onPredict: (match: Match) => void;
+}) {
+  return (
+    <div>
+      <h3 className="text-base font-bold text-[var(--foreground)] uppercase tracking-wide mb-4">{title}</h3>
+      <div className="flex items-stretch gap-0 overflow-x-auto pb-4">
+        {columns.map((column, i) => (
+          <div key={column.title} className="flex items-stretch shrink-0">
+            {i > 0 && (
+              <div className="flex items-center px-1">
+                <div className="w-6 h-px bg-[var(--card-border)]" />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-center mb-4">
+                <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">{column.title}</p>
+              </div>
+              <div className="flex flex-col justify-around gap-6 flex-1">
+                {column.matches.map((match) => (
+                  <BracketSlot
+                    key={match.id}
+                    match={match}
+                    prediction={predictions[match.id]}
+                    loading={loading[match.id]}
+                    onPredict={() => onPredict(match)}
+                    isGrandFinal={column.title === 'Grand Final'}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-
-          {/* Connector */}
-          <div className="flex flex-col items-center justify-center shrink-0">
-            <div className="w-8 h-px bg-[var(--card-border)]" />
-          </div>
-
-          {/* Grand Final */}
-          <div className="shrink-0">
-            <BracketSlot
-              match={matches['grand-final']}
-              prediction={predictions['grand-final']}
-              loading={loading['grand-final']}
-              onPredict={() => handlePredict('grand-final')}
-              ready={isReady('grand-final')}
-              isGrandFinal
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* LOWER BRACKET */}
-      <div>
-        <div className="mb-4">
-          <h3 className="text-base font-bold text-[var(--foreground)] uppercase tracking-wide">Lower Bracket</h3>
-        </div>
-
-        <div className="flex items-center gap-4 mb-3">
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-center">
-            <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Lower Bracket - Semifinals</p>
-            <p className="text-[10px] text-[var(--accent-gold)]">10 pts / Pick</p>
-          </div>
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg px-4 py-2 text-center">
-            <p className="text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">Lower Bracket - Finals</p>
-            <p className="text-[10px] text-[var(--accent-gold)]">20 pts / Pick</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6 overflow-x-auto pb-4">
-          {/* LB Semis */}
-          <div className="shrink-0">
-            <BracketSlot
-              match={matches['lb-sf']}
-              prediction={predictions['lb-sf']}
-              loading={loading['lb-sf']}
-              onPredict={() => handlePredict('lb-sf')}
-              ready={isReady('lb-sf')}
-            />
-          </div>
-
-          {/* Connector */}
-          <div className="flex flex-col items-center justify-center shrink-0">
-            <div className="w-8 h-px bg-[var(--card-border)]" />
-          </div>
-
-          {/* LB Finals */}
-          <div className="shrink-0">
-            <BracketSlot
-              match={matches['lb-final']}
-              prediction={predictions['lb-final']}
-              loading={loading['lb-final']}
-              onPredict={() => handlePredict('lb-final')}
-              ready={isReady('lb-final')}
-            />
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFinal }: {
-  match: Match | undefined;
+function BracketSlot({ match, prediction, loading, onPredict, isGrandFinal }: {
+  match: Match;
   prediction: MatchPrediction | undefined;
   loading: boolean | undefined;
   onPredict: () => void;
-  ready: boolean;
   isGrandFinal?: boolean;
 }) {
-  const hasTBD = !match || match.team1.name === 'TBD' || match.team2.name === 'TBD';
-  const canPredict = ready && !hasTBD && !prediction;
+  const hasTBD = match.team1.name === 'TBD' || match.team2.name === 'TBD';
+  const finished = Boolean(match.result);
+  const canPredict = !hasTBD && !finished && !prediction;
 
   return (
     <div
@@ -292,11 +221,20 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
       } ${canPredict ? 'cursor-pointer hover:border-[var(--accent-cyan)]/50 hover:shadow-[0_0_15px_var(--accent-cyan-dim)]' : ''}`}
       onClick={canPredict ? onPredict : undefined}
     >
+      {match.date && (
+        <div className="px-4 py-1.5 bg-[var(--background-secondary)] border-b border-[var(--card-border)]">
+          <span className="text-[10px] text-[var(--foreground-muted)] uppercase tracking-wider">
+            {match.date.slice(0, 10)}
+          </span>
+        </div>
+      )}
+
       {/* Team 1 */}
       <TeamRow
-        team={match?.team1}
-        isWinner={prediction?.predictedWinner === match?.team1.name}
-        isTBD={!match || match.team1.name === 'TBD'}
+        team={match.team1}
+        isWinner={finished ? match.result!.winner === match.team1.name : prediction?.predictedWinner === match.team1.name}
+        isTBD={match.team1.name === 'TBD'}
+        isProjected={match.team1Projected}
       />
 
       {/* Divider */}
@@ -304,19 +242,30 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
 
       {/* Team 2 */}
       <TeamRow
-        team={match?.team2}
-        isWinner={prediction?.predictedWinner === match?.team2.name}
-        isTBD={!match || match.team2.name === 'TBD'}
+        team={match.team2}
+        isWinner={finished ? match.result!.winner === match.team2.name : prediction?.predictedWinner === match.team2.name}
+        isTBD={match.team2.name === 'TBD'}
+        isProjected={match.team2Projected}
       />
 
-      {/* Prediction info or action */}
-      {loading && (
+      {/* Result, prediction info, or action */}
+      {finished && (
+        <div className="bg-[var(--accent-gold)]/5 px-4 py-2.5 border-t border-[var(--card-border)] flex items-center justify-between">
+          <span className="text-xs font-bold text-[var(--accent-gold)]">Final{match.result!.score ? ` ${match.result!.score}` : ''}</span>
+          {prediction && (
+            <span className={`text-xs ${prediction.predictedWinner === match.result!.winner ? 'text-[var(--accent-cyan)]' : 'text-red-400'}`}>
+              {prediction.predictedWinner === match.result!.winner ? 'Pick correct' : 'Pick missed'}
+            </span>
+          )}
+        </div>
+      )}
+      {!finished && loading && (
         <div className="bg-[var(--accent-cyan)]/5 px-4 py-2.5 border-t border-[var(--card-border)] flex items-center justify-center gap-2">
           <span className="w-3 h-3 border-2 border-[var(--accent-cyan)]/30 border-t-[var(--accent-cyan)] rounded-full animate-spin" />
           <span className="text-xs text-[var(--accent-cyan)]">Predicting...</span>
         </div>
       )}
-      {prediction && (
+      {!finished && prediction && (
         <div className="bg-[var(--accent-cyan)]/5 px-4 py-2.5 border-t border-[var(--card-border)] flex items-center justify-between">
           <span className="text-xs font-bold text-[var(--accent-cyan)]">{prediction.predictedScore}</span>
           <span className="text-xs text-[var(--accent-gold)]">{prediction.confidence}% confidence</span>
@@ -331,12 +280,13 @@ function BracketSlot({ match, prediction, loading, onPredict, ready, isGrandFina
   );
 }
 
-function TeamRow({ team, isWinner, isTBD }: {
-  team: Team | undefined;
+function TeamRow({ team, isWinner, isTBD, isProjected }: {
+  team: Team;
   isWinner: boolean;
   isTBD: boolean;
+  isProjected?: boolean;
 }) {
-  if (isTBD || !team) {
+  if (isTBD) {
     return (
       <div className="flex items-center gap-3 px-4 py-3.5 bg-[var(--card-bg)] opacity-40">
         <div className="w-8 h-8 rounded-lg bg-[var(--card-border)] flex items-center justify-center">
@@ -354,11 +304,14 @@ function TeamRow({ team, isWinner, isTBD }: {
         : 'bg-[var(--card-bg)]'
     }`}>
       <TeamLogo shortName={team.shortName} />
-      <span className={`text-base font-bold flex-1 ${
+      <span className={`text-base font-bold flex-1 ${isProjected ? 'italic opacity-60' : ''} ${
         isWinner ? 'text-[var(--accent-cyan)]' : 'text-[var(--foreground)]'
       }`}>
         {team.shortName}
       </span>
+      {isProjected && !isWinner && (
+        <span className="text-[9px] uppercase tracking-wider text-[var(--foreground-muted)]">projected</span>
+      )}
       {isWinner && (
         <svg className="w-4 h-4 text-[var(--accent-gold)]" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />

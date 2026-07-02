@@ -94,7 +94,7 @@ export async function getTournamentTeamSeeds(tournament: string) {
 export async function getTournamentMatches(tournament: string) {
   return cargoQuery({
     tables: 'MatchSchedule',
-    fields: 'Team1,Team2,Winner,DateTime_UTC,BestOf,Tab',
+    fields: 'Team1,Team2,Winner,Team1Score,Team2Score,DateTime_UTC,BestOf,Tab',
     where: `OverviewPage="${tournament}"`,
     orderBy: 'DateTime_UTC',
     limit: 100,

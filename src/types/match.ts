@@ -11,6 +11,8 @@ export interface Match {
     winner: string;
     score: string;
   };
+  team1Projected?: boolean;
+  team2Projected?: boolean;
 }
 
 export interface TournamentBracket {
